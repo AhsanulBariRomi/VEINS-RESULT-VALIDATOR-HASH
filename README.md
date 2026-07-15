@@ -18,6 +18,8 @@ Open your terminal or command prompt, navigate to this folder, and run:
 ```bash
 cd "/mnt/f/4. Academic(MSc)/Thesis/PLOT_VEC_HASH"
 python compare_simulation_outputs.py TraciGeneral-#0.vec grpcGeneral-#0.vec
+OR
+python compare_simulation_outputs.py 200Accident_TraciGeneral-#0.vec 200Accident_grpcGeneral-#0.vec
 ```
 
 ---

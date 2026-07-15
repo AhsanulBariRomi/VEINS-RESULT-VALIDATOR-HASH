@@ -29,23 +29,61 @@ METADATA_PREFIXES = (
 
 def compute_filtered_hash(file_path):
     """
-    Reads a file, filters out transient execution metadata, and computes a SHA-256 hash
-    of the actual simulation data and configurations.
+    Reads a file, filters out transient execution metadata, and groups/sorts
+    vector declarations and data points by their hierarchical vector names.
+    This ensures that the computed hash is completely independent of:
+    1. The writing/interleaving order of the lines.
+    2. Any variations in dynamic vector ID assignment (e.g. ID 141 vs 143).
     """
     sha256_hash = hashlib.sha256()
     line_count = 0
     filtered_count = 0
+    
+    # Map: vector_id -> "module_path vector_name"
+    vector_names = {}
+    # Map: "module_path vector_name" -> list of event-time-value strings
+    vector_data = {}
 
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line_count += 1
+            stripped_line = line.strip()
+            if not stripped_line:
+                continue
+                
             # Check if the line starts with any of our dynamic metadata prefixes
-            if line.startswith(METADATA_PREFIXES):
+            if stripped_line.startswith(METADATA_PREFIXES):
                 filtered_count += 1
                 continue  # Skip this line and do not include it in the hash
             
-            # Update the hash with the sanitized line
-            sha256_hash.update(line.encode("utf-8"))
+            if stripped_line.startswith("vector "):
+                parts = stripped_line.split()
+                if len(parts) >= 4:
+                    vec_id = int(parts[1])
+                    name = " ".join(parts[2:])
+                    vector_names[vec_id] = name
+                    if name not in vector_data:
+                        vector_data[name] = []
+            elif stripped_line[0].isdigit():
+                parts = stripped_line.split()
+                if len(parts) == 4:
+                    vec_id = int(parts[0])
+                    name = vector_names.get(vec_id)
+                    if name:
+                        # Exclude the arbitrary vector ID, store only: event, time, value
+                        event_time_val = f"{parts[1]}\t{parts[2]}\t{parts[3]}"
+                        vector_data[name].append(event_time_val)
+            else:
+                # Store structural/meta metadata (like version or static attributes)
+                name = f"__meta__:{stripped_line}"
+                if name not in vector_data:
+                    vector_data[name] = [""]
+
+    # Compute a deterministic hash of the sorted vector data
+    for name in sorted(vector_data.keys()):
+        sha256_hash.update(f"vector_name:{name}\n".encode("utf-8"))
+        for dp in sorted(vector_data[name]):
+            sha256_hash.update(f"{dp}\n".encode("utf-8"))
 
     return sha256_hash.hexdigest(), line_count, filtered_count
 
