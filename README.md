@@ -26,7 +26,9 @@ Open your terminal or command prompt, navigate to this folder, and run:
 
 ```bash
 cd "/mnt/f/4. Academic(MSc)/Thesis/PLOT_VEC_HASH"
+
 python compare_simulation_outputs.py TraciGeneral-#0.vec grpcGeneral-#0.vec
+python compare_simulation_outputs.py TraciGeneral-#0.vec LibsumoGeneral-#0.vec
 OR
 python compare_simulation_outputs.py 200Accident_TraciGeneral-#0.vec 200Accident_grpcGeneral-#0.vec
 OR
@@ -37,6 +39,9 @@ python compare_simulation_outputs.py grpcEvaluation_Seeds-#3.vec TraciEvaluation
 python compare_simulation_outputs.py grpcEvaluation_Seeds-#4.vec TraciEvaluation_Seeds-#4.vec
 OR
 python compare_simulation_outputs.py grpcGeneralZeroVehicle-#0.vec TraciGeneralZeroVehicle-#0.vec
+OR
+python compare_simulation_outputs.py AccidentLibsumoGeneral-#0.vec AccidentGrpcGeneral-#0.vec
+python compare_simulation_outputs.py AccidentTraciGeneral-#0-#0.vec AccidentGrpcGeneral-#0.vec
 ```
 
 ---
